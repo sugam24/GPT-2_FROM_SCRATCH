@@ -2,15 +2,11 @@
 
 This repository contains a complete, step-by-step implementation of building a Large Language Model (LLM) from the ground up. The project is structured as a sequence of notebooks, where each notebook introduces and implements a core concept required to understand how modern LLMs work internally.
 
-The goal of this repository is educational: to understand **how text becomes numbers, how those numbers become embeddings, and how those embeddings are prepared for training neural networks**, rather than treating LLMs as black boxes.
-
 ---
 
 ## 📂 Project Structure
 
 ```
-
-.
 ├── 01. Data_preparation_&_sampling.ipynb
 ├── 02. Vector_embedding.ipynb
 
@@ -146,10 +142,3 @@ This notebook explores **pretrained word embeddings** and semantic relationships
 
 ---
 
-
-
-* A **README for later transformer files**
-* A **table of contents**
-* Or a **course-style progression outline**
-
-Just say it.
