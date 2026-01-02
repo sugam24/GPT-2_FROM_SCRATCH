@@ -1,118 +1,155 @@
-# LLM FROM SCRATCH
+# 📘 LLM From Scratch
 
-# 01. Data_preparation_&_sampling.ipynb
+This repository contains a complete, step-by-step implementation of building a Large Language Model (LLM) from the ground up. The project is structured as a sequence of notebooks, where each notebook introduces and implements a core concept required to understand how modern LLMs work internally.
 
-This notebook covers the **foundational text processing pipeline** required before training a Large Language Model (LLM). It demonstrates how raw text is transformed into numerical representations that an LLM can learn from, using both **custom tokenizers** and **GPT-style Byte Pair Encoding (BPE)**, followed by **data sampling and embedding preparation**.
+The goal of this repository is educational: to understand **how text becomes numbers, how those numbers become embeddings, and how those embeddings are prepared for training neural networks**, rather than treating LLMs as black boxes.
 
 ---
 
-## Overview of Work Done
+## 📂 Project Structure
+
+```
+
+.
+├── 01. Data_preparation_&_sampling.ipynb
+├── 02. Vector_embedding.ipynb
+
+```
+
+Each notebook builds on concepts introduced in the previous one.
+
+---
+
+## 📘 01. Data_preparation_&_sampling.ipynb
+
+This notebook focuses on transforming raw text into structured numerical data that can be used as input for language models.
+
+### Topics Covered
 
 ### 1. Loading and Inspecting Raw Text
-- A short story (*The Verdict* by Edith Wharton) is downloaded from Kaggle.
-- The dataset contains **20,479 characters**, serving as a manageable educational example.
-- The raw text is inspected to understand its structure and content.
+- Loads a short story (*The Verdict* by Edith Wharton).
+- Reads and inspects raw text length and structure.
+- Demonstrates how real-world datasets are ingested.
 
 ---
 
-### 2. Tokenization from Scratch (Regex-based)
-- Text is split into tokens using Python’s `re` module.
-- Tokens include:
+### 2. Tokenization from Scratch
+- Implements tokenization using Python regular expressions.
+- Splits text into:
   - Words
-  - Punctuation (`. , ? -- " ( )` etc.)
-- Whitespaces are optionally removed for simplicity.
-- The full story is tokenized into **4,690 tokens**.
-
-**Key takeaway:** Tokenization converts raw text into discrete units that models can process.
+  - Punctuation
+  - Special symbols
+- Explains why tokenization design matters for language models.
 
 ---
 
-### 3. Vocabulary Construction & Token IDs
-- All unique tokens are collected and sorted.
-- A vocabulary is built mapping:
-  - **token → integer ID**
-- Vocabulary size: **1,130 tokens**
-- An inverse vocabulary (**ID → token**) is also created for decoding.
+### 3. Vocabulary Construction
+- Extracts all unique tokens from the dataset.
+- Builds a token-to-ID mapping.
+- Creates an inverse ID-to-token mapping.
+- Calculates vocabulary size.
 
 ---
 
-### 4. Custom Tokenizer Implementation
-Two tokenizer versions are implemented:
+### 4. Custom Tokenizer Implementations
 
-#### `SimpleTokenizerV1`
-- Encodes text into token IDs using the vocabulary.
-- Decodes token IDs back into readable text.
+#### SimpleTokenizerV1
+- Converts text to token IDs.
+- Converts token IDs back to text.
 - Fails on unseen words (out-of-vocabulary problem).
 
-#### Limitation Highlighted
-- Encoding unseen words (e.g. `"Hello"`) raises a `KeyError`.
+#### SimpleTokenizerV2
+- Introduces special tokens:
+  - `<|unk|>` for unknown words
+  - `<|endoftext|>` for document boundaries
+- Handles unseen tokens safely.
+- Demonstrates why special tokens are necessary in real LLMs.
 
 ---
 
-### 5. Handling Unknown Tokens & Special Tokens
-To address vocabulary limitations:
-
-#### Added Special Tokens
-- `<|unk|>` → unknown words
-- `<|endoftext|>` → document boundary marker
-
-Vocabulary size increases to **1,132 tokens**.
-
-#### `SimpleTokenizerV2`
-- Replaces unseen words with `<|unk|>`
-- Supports multi-document text via `<|endoftext|>`
-- Successfully encodes and decodes unseen inputs.
+### 5. Limitations of Word-Level Tokenization
+- Shows failure cases for unseen words.
+- Motivates the need for subword tokenization techniques.
 
 ---
 
-### 6. Discussion on Special Tokens
-Conceptual explanation of commonly used tokens in LLMs:
-- **BOS** (Beginning of Sequence)
-- **EOS** (End of Sequence)
-- **PAD** (Padding)
-- GPT-style models primarily rely on `<|endoftext|>` and **subword tokenization** instead of `<|unk|>`.
-
----
-
-### 7. Byte Pair Encoding (BPE) with `tiktoken`
-- Introduces OpenAI’s **GPT-2 BPE tokenizer**.
+### 6. Byte Pair Encoding (BPE) with GPT-2 Tokenizer
+- Uses OpenAI’s `tiktoken` tokenizer.
 - Demonstrates:
-  - Encoding unseen words without `<|unk|>`
-  - Subword-level tokenization
-- Shows how GPT tokenizers handle arbitrary text robustly.
+  - Encoding text into token IDs
+  - Decoding tokens back into text
+  - Handling unseen and compound words
+- Explains why GPT-style tokenization does not require `<unk>` tokens.
 
 ---
 
-### 8. Data Sampling with Sliding Window
-- Tokenized text is converted into **input–target pairs**.
-- Uses a **sliding context window**:
-  - Input: previous tokens
-  - Target: next token
-- This forms the basis of **next-token prediction**, the core LLM training objective.
+### 7. Training Data Generation (Sliding Window)
+- Converts tokenized text into `(input, target)` pairs.
+- Uses a sliding window approach.
+- Prepares sequences suitable for next-token prediction tasks.
 
 ---
 
-### 9. PyTorch Dataset & DataLoader
-- `GPTDatasetV1` is implemented to:
-  - Chunk token sequences using `max_length` and `stride`
-  - Generate `(input_ids, target_ids)` pairs
-- A reusable `create_dataloader_v1` function is provided.
-- Demonstrates batching, overlapping windows, and sequence alignment.
+### 8. Dataset and DataLoader Construction
+- Implements a custom PyTorch `Dataset`.
+- Uses `DataLoader` for batching and iteration.
+- Supports configurable sequence length and stride.
 
 ---
 
-### 10. Token Embeddings
-- Uses `torch.nn.Embedding` to map token IDs → dense vectors.
-- Shows:
-  - Embedding weight initialization
-  - Lookup of embeddings for token sequences
+### 9. Token Embeddings
+- Creates token embeddings using `torch.nn.Embedding`.
+- Maps token IDs to dense vector representations.
 
 ---
 
-### 11. Positional Embeddings
-- Introduces **positional encoding** to retain word order.
-- Separate embedding layers for:
-  - Token embeddings
-  - Position embeddings
-- Final input embeddings are computed as:
-  
+### 10. Positional Embeddings
+- Adds positional information to token embeddings.
+- Combines token and positional embeddings to form final model input.
+
+---
+
+## 📘 02. Vector_embedding.ipynb
+
+This notebook explores **pretrained word embeddings** and semantic relationships using Word2Vec.
+
+---
+
+### 1. Loading Pretrained Word2Vec Model
+- Uses Google’s Word2Vec (300-dimensional) embeddings via `gensim`.
+- Loads a large pretrained semantic space.
+
+---
+
+### 2. Inspecting Word Vectors
+- Examines vector values for individual words.
+- Understands embedding dimensionality and structure.
+
+---
+
+### 3. Semantic Similarity
+- Computes cosine similarity between word pairs.
+- Demonstrates semantic closeness (e.g., *king–queen*, *boy–girl*).
+
+---
+
+### 4. Vector Arithmetic
+- Performs analogy reasoning:
+  - `king - man + woman ≈ queen`
+- Shows how meaning is encoded geometrically.
+
+---
+
+### 5. Distance-Based Semantic Comparison
+- Measures distance between related and unrelated words.
+- Demonstrates how embeddings encode semantic relationships.
+
+---
+
+
+
+* A **README for later transformer files**
+* A **table of contents**
+* Or a **course-style progression outline**
+
+Just say it.
